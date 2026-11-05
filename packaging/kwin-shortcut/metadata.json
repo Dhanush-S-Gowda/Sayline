@@ -1,0 +1,12 @@
+{
+    "KPlugin": {
+        "Id": "sayline-shortcut",
+        "Name": "Sayline shortcut",
+        "Description": "Toggle local dictation with Ctrl+Space, starting Sayline on demand",
+        "Version": "0.4.0",
+        "License": "MIT"
+    },
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js",
+    "KPackageStructure": "KWin/Script"
+}

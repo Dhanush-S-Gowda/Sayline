@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Sayline
+Comment=Local Nemotron speech dictation
+Exec=sayline --toggle
+Icon=org.sayline.Sayline
+Terminal=false
+Categories=Utility;Accessibility;
+StartupNotify=false
