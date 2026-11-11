@@ -3,15 +3,15 @@
     <td rowspan="2" width="15%" align="center" valign="middle">
       <img src="packaging/icons/org.sayline.Sayline.png" alt="Sayline logo" width="88" height="88">
     </td>
-    <td width="60%"><h1>Sayline</h1></td>
-    <td rowspan="2" width="25%" align="center" valign="middle">
+    <td width="85%"><h1>Sayline</h1></td>
+  </tr>
+  <tr>
+    <td>
+      <p>Give your keyboard a breather.</p><br/>
       <a href="https://dhanush-s-gowda.github.io/Sayline/">
         <img src="https://img.shields.io/badge/Website-Live%20demo%20%E2%86%97-2563EB?style=for-the-badge" alt="Visit the Sayline website and try the live demo" width="190" height="28">
       </a>
     </td>
-  </tr>
-  <tr>
-    <td>Give your keyboard a breather.</td>
   </tr>
 </table>
 
