@@ -1,30 +1,36 @@
-<table width="100%">
-  <tr>
-    <td rowspan="2" width="45%" align="center" valign="middle">
-      <img src="packaging/icons/org.sayline.Sayline.png" alt="Sayline logo" width="88" height="88">
-    </td>
-    <td width="85%"><h1>Sayline</h1></td>
-  </tr>
-  <tr>
-    <td>
-      <p>Give your keyboard a breather.</p><br/>
-      <a href="https://dhanush-s-gowda.github.io/Sayline/">
-        <img src="https://img.shields.io/badge/Website-Live%20demo%20%E2%86%97-2563EB?style=for-the-badge" alt="Visit the Sayline website and try the live demo" width="190" height="28">
-      </a>
-    </td>
-  </tr>
-</table>
-
-Sayline turns your voice into text in the app you're already using. Built for
-**KDE Plasma on Wayland**, it keeps your words in view with a small, movable
-overlay while **NVIDIA Nemotron** handles speech recognition locally on your
-computer through NeMo-Speech.cpp.
-
-**Press Ctrl+Space to start, speak your mind, and press it again when you're done.**
+<h1 align="center">
+  <a href="https://dhanush-s-gowda.github.io/Sayline/">
+    <img src="packaging/icons/org.sayline.Sayline.png" alt="Sayline logo" width="64" height="64" align="absmiddle">
+  </a>
+  Sayline
+</h1>
 
 <p align="center">
-  <img src="docs/Screenshot.png" alt="Sayline's dictation overlay with a blue audio waveform and the live transcript: Hello, I am speaking from SAYLINE" width="360">
+  <strong>Give your keyboard a breather.</strong><br>
+  Live, local voice typing for KDE Plasma on Wayland.
 </p>
+
+<p align="center">
+  <a href="https://dhanush-s-gowda.github.io/Sayline/">
+    <img src="https://img.shields.io/badge/Website-Try%20the%20demo%20%E2%86%97-2563EB?style=for-the-badge" alt="Website: try the interactive demo" height="28">
+  </a>
+  &nbsp;
+  <a href="#quick-start">
+    <img src="https://img.shields.io/badge/Get%20started-Install%20Sayline-1F2937?style=for-the-badge" alt="Get started: install Sayline" height="28">
+  </a>
+</p>
+
+<p align="center">
+  Press <kbd>Ctrl</kbd> + <kbd>Space</kbd>, speak, and your words appear in the app you're using.<br>
+  Powered by NVIDIA Nemotron through NeMo-Speech.cpp, running locally on your computer.
+</p>
+
+<p align="center">
+  <img src="docs/Screenshot.png" alt="Sayline's compact dictation overlay showing a blue waveform and live transcript" width="360"><br>
+  <sub>A small, movable overlay that keeps your app in focus.</sub>
+</p>
+
+---
 
 ## Features
 
@@ -125,16 +131,6 @@ Porting would require replacing those integrations; installing Qt and building
 the current source is not sufficient. A future port would also need Qt 6.7+,
 CMake 3.21+, and a C++20 compiler, plus platform-specific equivalents for the
 desktop integration and input injection.
-
-## Landing page
-
-The single-screen website lives in `docs/index.html`, with inline styles and
-the interactive preview in `docs/demo.js`. The preview simulates dictation;
-it does not access the microphone or run the speech model.
-
-To host it with GitHub Pages, open the repository's **Settings → Pages**, select
-**Deploy from a branch**, choose your publishing branch and **`/docs`**, then
-save. No build step is required.
 
 ## Speech recognition credits
 
