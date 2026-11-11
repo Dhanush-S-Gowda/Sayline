@@ -1,11 +1,30 @@
-<div align="center">
-  <img src="sayline-icon.ico" alt="Sayline" width="112" height="112">
-  <h1>Sayline</h1>
-  <p>Live, local dictation for KDE Plasma on Wayland</p>
-</div>
+<h1>
+  <img src="packaging/icons/org.sayline.Sayline.png" alt="" width="48" height="48" align="absmiddle">
+  Sayline
+</h1>
 
-Press **Ctrl+Space**, speak, and Sayline types into the focused app. Speech
-recognition runs locally using NVIDIA NeMo-Speech.cpp.
+**Turn your voice into text, right where you're working.**
+
+Sayline brings live, local dictation to **KDE Plasma on Wayland**. Press
+**Ctrl+Space**, speak, and your words appear in the focused app. A compact,
+movable overlay shows your transcript without taking keyboard focus, while
+speech recognition runs on your computer using NVIDIA's NeMo-Speech.cpp.
+
+<p align="center">
+  <img src="docs/Screenshot.png" alt="Sayline's dictation overlay with a blue audio waveform and the live transcript: Hello, I am speaking from SAYLINE" width="500">
+</p>
+
+## Features
+
+- **Live transcription** — text updates as you speak, with corrections as
+  recognition results are refined.
+- **Local recognition** — CPU inference with the English `nemotron-en` model.
+- **An unobtrusive overlay** — move it where you like while your app keeps
+  keyboard focus.
+- **Spoken punctuation** — optionally dictate comma, full stop, question mark,
+  exclamation mark, colon, and semicolon.
+- **Desktop integration** — start and stop with a KDE shortcut and revisit
+  previous dictation sessions in your history.
 
 ## Quick start
 
@@ -95,14 +114,7 @@ the current source is not sufficient. A future port would also need Qt 6.7+,
 CMake 3.21+, and a C++20 compiler, plus platform-specific equivalents for the
 desktop integration and input injection.
 
-## Features
-
-- Local, live speech-to-text with corrections as recognition results are refined.
-- Small, movable overlay that does not take keyboard focus.
-- Optional spoken punctuation: comma, full stop, question mark, exclamation
-  mark, colon, and semicolon.
-- CPU inference with the English `nemotron-en` model.
-- Dictation session history and KDE shortcut integration.
+## Speech recognition credits
 
 The recognition engine and `nemotron-en` model come from NVIDIA's
 [NeMo-Speech.cpp project](https://github.com/NVIDIA/NeMo-Speech.cpp); Sayline
