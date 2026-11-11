@@ -114,6 +114,16 @@ the current source is not sufficient. A future port would also need Qt 6.7+,
 CMake 3.21+, and a C++20 compiler, plus platform-specific equivalents for the
 desktop integration and input injection.
 
+## Landing page
+
+The single-screen website lives in `docs/index.html`, with inline styles and
+the interactive preview in `docs/demo.js`. The preview simulates dictation;
+it does not access the microphone or run the speech model.
+
+To host it with GitHub Pages, open the repository's **Settings → Pages**, select
+**Deploy from a branch**, choose your publishing branch and **`/docs`**, then
+save. No build step is required.
+
 ## Speech recognition credits
 
 The recognition engine and `nemotron-en` model come from NVIDIA's
