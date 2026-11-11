@@ -1,29 +1,41 @@
-<h1>
-  <img src="packaging/icons/org.sayline.Sayline.png" alt="" width="48" height="48" align="absmiddle">
-  Sayline
-</h1>
+<table width="100%">
+  <tr>
+    <td rowspan="2" width="112" align="center" valign="middle">
+      <img src="packaging/icons/org.sayline.Sayline.png" alt="Sayline logo" width="88" height="88">
+    </td>
+    <td width="100%"><h1>Sayline</h1></td>
+    <td rowspan="2" align="center" valign="middle">
+      <a href="https://dhanush-s-gowda.github.io/Sayline/">
+        <img src="https://img.shields.io/badge/Website-Live%20demo%20%E2%86%97-2563EB?style=for-the-badge" alt="Visit the Sayline website and try the live demo" height="28">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td>Give your keyboard a breather.</td>
+  </tr>
+</table>
 
-**Turn your voice into text, right where you're working.**
+Sayline turns your voice into text in the app you're already using. Built for
+**KDE Plasma on Wayland**, it keeps your words in view with a small, movable
+overlay while **NVIDIA Nemotron** handles speech recognition locally on your
+computer through NeMo-Speech.cpp.
 
-Sayline brings live, local dictation to **KDE Plasma on Wayland**. Press
-**Ctrl+Space**, speak, and your words appear in the focused app. A compact,
-movable overlay shows your transcript without taking keyboard focus, while
-speech recognition runs on your computer using NVIDIA's NeMo-Speech.cpp.
+**Press Ctrl+Space to start, speak your mind, and press it again when you're done.**
 
 <p align="center">
-  <img src="docs/Screenshot.png" alt="Sayline's dictation overlay with a blue audio waveform and the live transcript: Hello, I am speaking from SAYLINE" width="500">
+  <img src="docs/Screenshot.png" alt="Sayline's dictation overlay with a blue audio waveform and the live transcript: Hello, I am speaking from SAYLINE" width="360">
 </p>
 
 ## Features
 
-- **Live transcription** — text updates as you speak, with corrections as
+- **Live transcription**: text updates as you speak, with corrections as
   recognition results are refined.
-- **Local recognition** — CPU inference with the English `nemotron-en` model.
-- **An unobtrusive overlay** — move it where you like while your app keeps
+- **Local recognition**: CPU inference with the English `nemotron-en` model.
+- **An unobtrusive overlay**: move it where you like while your app keeps
   keyboard focus.
-- **Spoken punctuation** — optionally dictate comma, full stop, question mark,
+- **Spoken punctuation**: optionally dictate comma, full stop, question mark,
   exclamation mark, colon, and semicolon.
-- **Desktop integration** — start and stop with a KDE shortcut and revisit
+- **Desktop integration**: start and stop with a KDE shortcut and revisit
   previous dictation sessions in your history.
 
 ## Quick start
