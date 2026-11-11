@@ -83,6 +83,7 @@ Window {
             color: Qt.alpha(theme.windowText, 0.16)
         }
         Label {
+            objectName: "transcriptLabel"
             x: 95
             width: parent.width - x - 48
             anchors.verticalCenter: parent.verticalCenter
@@ -90,8 +91,11 @@ Window {
             color: theme.windowText
             text: punctuationToggle.hovered && !previewMode
                 ? (dictation.punctuationEnabled ? "Spoken punctuation on" : "Spoken punctuation off")
-                : (previewMode ? "I'm in the middle of speaking…" : (dictation.transcript || dictation.status))
+                : (previewMode ? "I'm in the middle of speaking…"
+                    : (dictation.transcript || dictation.status).replace(/[\r\n\u2028\u2029]+/g, " "))
             textFormat: Text.PlainText
+            wrapMode: Text.NoWrap
+            maximumLineCount: 1
             elide: Text.ElideLeft
             Accessible.name: text
         }

@@ -1,6 +1,7 @@
 #include "transcript.h"
 #include <QList>
 #include <QRegularExpression>
+#include <algorithm>
 
 namespace {
 struct Word {
@@ -114,9 +115,58 @@ TextEdit replacementEdit(const QString &previous, const QString &next) {
 
 namespace {
 QString renderPunctuation(const QString &raw, const QList<PunctuationSpan> *spans) {
-    static const QRegularExpression command(
-        QStringLiteral(R"((?<![\p{L}\p{N}_])(?:(literal)\s+)?(question\s+mark|exclamation\s+mark|full\s+stop|semicolon|comma|colon)(?![\p{L}\p{N}_]))"),
-        QRegularExpression::CaseInsensitiveOption | QRegularExpression::UseUnicodePropertiesOption);
+    enum class Spacing { Closing, Joining, Opening, Spaced, LineBreak, Word };
+    struct Command { QString phrase; QString text; Spacing spacing; };
+    static const QList<Command> commands{
+        {"question mark", "?", Spacing::Closing},
+        {"exclamation mark", "!", Spacing::Closing},
+        {"full stop", ".", Spacing::Closing},
+        {"semicolon", ";", Spacing::Closing},
+        {"comma", ",", Spacing::Closing},
+        {"colon", ":", Spacing::Closing},
+        {"hyphen", "-", Spacing::Joining},
+        {"em dash", QString::fromUtf8("—"), Spacing::Spaced},
+        {"ellipsis", QString::fromUtf8("…"), Spacing::Closing},
+        {"apostrophe", "'", Spacing::Joining},
+        {"open quote", "\"", Spacing::Opening},
+        {"close quote", "\"", Spacing::Closing},
+        {"open parenthesis", "(", Spacing::Opening},
+        {"close parenthesis", ")", Spacing::Closing},
+        {"open bracket", "[", Spacing::Opening},
+        {"close bracket", "]", Spacing::Closing},
+        {"forward slash", "/", Spacing::Joining},
+        {"backslash", "\\", Spacing::Joining},
+        {"underscore", "_", Spacing::Joining},
+        {"at sign", "@", Spacing::Joining},
+        {"hash sign", "#", Spacing::Opening},
+        {"percent sign", "%", Spacing::Closing},
+        {"ampersand", "&", Spacing::Spaced},
+        {"new line", "\n", Spacing::LineBreak},
+        {"next line", "\n", Spacing::LineBreak},
+        {"new paragraph", "\n\n", Spacing::LineBreak},
+        {"zero", "0", Spacing::Word},
+        {"one", "1", Spacing::Word},
+        {"two", "2", Spacing::Word},
+        {"three", "3", Spacing::Word},
+        {"four", "4", Spacing::Word},
+        {"five", "5", Spacing::Word},
+        {"six", "6", Spacing::Word},
+        {"seven", "7", Spacing::Word},
+        {"eight", "8", Spacing::Word},
+        {"nine", "9", Spacing::Word},
+    };
+    static const QRegularExpression command([&] {
+        QStringList phrases;
+        for (const auto &entry : commands) {
+            auto phrase = QRegularExpression::escape(entry.phrase);
+            phrase.replace("\\ ", "\\s+");
+            phrases.append(phrase);
+        }
+        return QStringLiteral(R"((?<![\p{L}\p{M}\p{N}_])(?:(literal)\s+)?(%1)(?![\p{L}\p{M}\p{N}_]))")
+            .arg(phrases.join('|'));
+    }(), QRegularExpression::CaseInsensitiveOption | QRegularExpression::UseUnicodePropertiesOption);
+    static const QRegularExpression whitespace(QStringLiteral(R"(\s+)"));
+    const auto horizontalSpace = [](QChar ch) { return ch.isSpace() && ch != '\n' && ch != '\r'; };
     QString output;
     qsizetype cursor = 0;
     qsizetype spanIndex = 0;
@@ -137,16 +187,28 @@ QString renderPunctuation(const QString &raw, const QList<PunctuationSpan> *span
             output += match.captured(2); // Escaped output is never matched again.
             continue;
         }
-        const auto phrase = match.captured(2).toLower();
-        const QChar symbol = phrase.startsWith("question") ? '?' : phrase.startsWith("exclamation") ? '!'
-            : phrase.startsWith("full") ? '.' : phrase == "comma" ? ',' : phrase == "colon" ? ':' : ';';
-        while (!output.isEmpty() && output.back().isSpace()) output.chop(1);
-        output += symbol;
-        // NeMo may add punctuation immediately after a spoken command.
+        const auto phrase = match.captured(2).toLower().replace(whitespace, " ");
+        const auto entry = std::find_if(commands.cbegin(), commands.cend(),
+                                       [&](const Command &value) { return value.phrase == phrase; });
+        Q_ASSERT(entry != commands.cend());
+        if (entry->spacing == Spacing::Word) {
+            // Digits replace words without consuming sentence punctuation or spaces.
+            output += entry->text;
+            continue;
+        }
+        if (entry->spacing != Spacing::Opening)
+            while (!output.isEmpty() && horizontalSpace(output.back())) output.chop(1);
+        if (entry->spacing == Spacing::Spaced && !output.isEmpty()
+            && !output.back().isSpace()) output += ' ';
+        output += entry->text;
+        // Suppress punctuation added by ASR to a spoken punctuation command.
         while (cursor < raw.size() && QStringLiteral(".,?!:;").contains(raw[cursor])) ++cursor;
         const auto spaceStart = cursor;
-        while (cursor < raw.size() && raw[cursor].isSpace()) ++cursor;
-        if (cursor > spaceStart && cursor < raw.size()) output += ' ';
+        while (cursor < raw.size() && horizontalSpace(raw[cursor])) ++cursor;
+        const bool joinRight = entry->spacing == Spacing::Joining
+            || entry->spacing == Spacing::Opening || entry->spacing == Spacing::LineBreak;
+        if (!joinRight && cursor > spaceStart && cursor < raw.size()
+            && raw[cursor] != '\n' && raw[cursor] != '\r') output += ' ';
     }
     output += raw.mid(cursor);
     return output;

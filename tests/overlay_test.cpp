@@ -3,13 +3,14 @@
 #include <QQmlContext>
 #include <QQuickItem>
 #include <QQuickWindow>
+#include <QRegularExpression>
 
 class OverlayModel : public QObject {
     Q_OBJECT
     Q_PROPERTY(bool shown MEMBER shown CONSTANT)
     Q_PROPERTY(bool busy MEMBER busy CONSTANT)
     Q_PROPERTY(QString status MEMBER status CONSTANT)
-    Q_PROPERTY(QString transcript MEMBER transcript CONSTANT)
+    Q_PROPERTY(QString transcript MEMBER transcript NOTIFY changed)
     Q_PROPERTY(double level MEMBER level CONSTANT)
     Q_PROPERTY(bool punctuationEnabled MEMBER punctuationEnabled NOTIFY changed)
 public:
@@ -23,6 +24,35 @@ signals:
 class OverlayTest : public QObject {
     Q_OBJECT
 private slots:
+    void multilineTranscriptStaysOnOneLine() {
+        OverlayModel model;
+        QQmlApplicationEngine engine;
+        engine.rootContext()->setContextProperty("dictation", &model);
+        engine.rootContext()->setContextProperty("previewMode", false);
+        engine.load(QUrl("qrc:/qml/Main.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *label = window->findChild<QQuickItem *>("transcriptLabel");
+        QVERIFY(label);
+        const QStringList transcripts{
+            "First\nsecond\n\nthird", "First\r\nsecond\rthird",
+            QString::fromUtf8("First\u2028second\u2029third"),
+            QString("A long sentence with several words.\n\n").repeated(20) + "Last line"};
+        for (const auto &transcript : transcripts) {
+            model.transcript = transcript;
+            emit model.changed();
+            auto expected = transcript;
+            expected.replace(QRegularExpression("[\r\n\u2028\u2029]+"), " ");
+            QTRY_COMPARE(label->property("text").toString(), expected);
+            QTRY_COMPARE(label->property("lineCount").toInt(), 1);
+            QCOMPARE(model.transcript, transcript);
+            QVERIFY(label->y() >= 0);
+            QVERIFY(label->y() + label->height() <= label->parentItem()->height());
+        }
+        window->grabWindow().save(QStringLiteral(SAYLINE_BINARY_DIR "/overlay-single-line.png"));
+    }
     void hoverLeavesButtonClickable() {
         OverlayModel model;
         QQmlApplicationEngine engine;

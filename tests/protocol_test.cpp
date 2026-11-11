@@ -13,6 +13,31 @@ private slots:
         QTest::newRow("boundary") << "commander semicolons time period literal word" << "commander semicolons time period literal word";
         QTest::newRow("unicode") << QString::fromUtf8("Café COMMA 世界 FULL STOP") << QString::fromUtf8("Café, 世界.");
         QTest::newRow("unicode-boundary") << QString::fromUtf8("écomma commaé") << QString::fromUtf8("écomma commaé");
+        QTest::newRow("joining") << "well hyphen known it apostrophe s path forward slash file backslash name underscore end"
+            << "well-known it's path/file\\name_end";
+        QTest::newRow("symbols") << "mail at sign example percent sign next hash sign topic ampersand more"
+            << "mail@example% next #topic & more";
+        QTest::newRow("dash-ellipsis") << "Wait ellipsis really em dash yes" << QString::fromUtf8("Wait… really — yes");
+        QTest::newRow("pairs") << "Say open quote hello close quote open parenthesis aside close parenthesis open bracket note close bracket full stop"
+            << "Say \"hello\" (aside) [note].";
+        QTest::newRow("lines") << "First new line second next line third new paragraph fourth"
+            << "First\nsecond\nthird\n\nfourth";
+        QTest::newRow("trailing-line") << "First new line." << "First\n";
+        QTest::newRow("leading-paragraph") << "new paragraph Hello" << "\n\nHello";
+        QTest::newRow("consecutive-lines") << "First new line next line last" << "First\n\nlast";
+        QTest::newRow("line-punctuation") << "First full stop new line open quote next close quote" << "First.\n\"next\"";
+        QTest::newRow("asr-pairs") << "open bracket, note close bracket. next line. end" << "[note]\nend";
+        QTest::newRow("new-escapes") << "literal hyphen literal new line literal open quote literal at sign"
+            << "hyphen new line open quote at sign";
+        QTest::newRow("whitespace") << "OPEN\tPARENTHESIS hello CLOSE   PARENTHESIS" << "(hello)";
+        QTest::newRow("combining-boundary") << QString::fromUtf8("commá hyphenated someone") << QString::fromUtf8("commá hyphenated someone");
+        QTest::newRow("digits") << "zero one two three four five six seven eight nine" << "0 1 2 3 4 5 6 7 8 9";
+        QTest::newRow("digits-sentence") << "I have TWO apples, one orange and zero pears." << "I have 2 apples, 1 orange and 0 pears.";
+        QTest::newRow("digits-punctuation") << "one, two. three?! four: five; six..." << "1, 2. 3?! 4: 5; 6...";
+        QTest::newRow("digits-commands") << "open bracket one close bracket next line two percent sign" << "[1]\n2%";
+        QTest::newRow("digits-escape") << "literal one and literal zero" << "one and zero";
+        QTest::newRow("digits-boundaries") << QString::fromUtf8("someone twosome stone one_two oné éone 123")
+            << QString::fromUtf8("someone twosome stone one_two oné éone 123");
         QTest::newRow("unrelated") << "Wait... really?!" << "Wait... really?!";
     }
     void spokenPunctuation() {
@@ -80,6 +105,42 @@ private slots:
         t.complete("literal comma"); QCOMPARE(t.display(), QString("comma"));
         t.delta("Hello comma"); QCOMPARE(t.display(), QString("comma Hello,"));
         t.snapshot("Hello commander"); QCOMPARE(t.display(), QString("comma Hello commander"));
+    }
+
+    void liveFormattingAndToggleBoundaries() {
+        Transcript t; t.setPunctuationEnabled(true);
+        t.snapshot("well hy"); t.delta("phen known new");
+        QCOMPARE(t.display(), QString("well-known new"));
+        t.delta(" line next");
+        QCOMPARE(t.display(), QString("well-known\nnext"));
+        t.complete("Well hyphen known new line. Next");
+        QCOMPARE(t.display(), QString("Well-known\nNext"));
+        t.snapshot("new"); t.setPunctuationEnabled(false); t.delta(" paragraph plain hyphen text");
+        QCOMPARE(t.display(), QString("Well-known\nNext new paragraph plain hyphen text"));
+        t.complete("new paragraph plain hyphen text");
+        t.setPunctuationEnabled(true); t.snapshot("new paragraph open bracket done close bracket");
+        QCOMPARE(t.display(), QString("Well-known\nNext new paragraph plain hyphen text\n\n[done]"));
+        t.snapshot("literal new line");
+        QCOMPARE(t.display(), QString("Well-known\nNext new paragraph plain hyphen text new line"));
+    }
+
+    void liveDigitsFollowPunctuationMode() {
+        Transcript t;
+        t.snapshot("one two");
+        QCOMPARE(t.display(), QString("one two"));
+        t.setPunctuationEnabled(true);
+        t.delta(" three fo"); t.delta("ur");
+        QCOMPARE(t.display(), QString("one two 3 4"));
+        t.setPunctuationEnabled(false);
+        t.delta(" five six");
+        QCOMPARE(t.display(), QString("one two 3 4 five six"));
+        t.complete("One two three four five six.");
+        QCOMPARE(t.display(), QString("One two 3 4 five six."));
+        t.setPunctuationEnabled(true);
+        t.snapshot("literal seven eight");
+        QCOMPARE(t.display(), QString("One two 3 4 five six. seven 8"));
+        t.complete("literal seven eight.");
+        QCOMPARE(t.display(), QString("One two 3 4 five six. seven 8."));
     }
 
     void zedEditorAndEmbeddedTerminalSharePaste() {

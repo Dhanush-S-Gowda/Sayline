@@ -40,9 +40,92 @@
 - **An unobtrusive overlay**: move it where you like while your app keeps
   keyboard focus.
 - **Spoken punctuation**: optionally dictate comma, full stop, question mark,
-  exclamation mark, colon, and semicolon.
+  punctuation marks, symbols, digits, line breaks, and paragraphs. See the full command
+  reference below.
 - **Desktop integration**: start and stop with a KDE shortcut and revisit
   previous dictation sessions in your history.
+
+## Spoken punctuation and formatting
+
+Click the **punctuation icon** on the dictation overlay to turn spoken commands
+on or off. They are **off by default**, and Sayline remembers your setting.
+The following English phrases work when this option is on; capitalization does
+not matter.
+
+| Say | Output | Spacing |
+|---|---|---|
+| `comma` | `,` | Attached to the preceding text |
+| `full stop` | `.` | Attached to the preceding text |
+| `question mark` | `?` | Attached to the preceding text |
+| `exclamation mark` | `!` | Attached to the preceding text |
+| `colon` | `:` | Attached to the preceding text |
+| `semicolon` | `;` | Attached to the preceding text |
+| `hyphen` | `-` | Joins adjacent text: `well-known` |
+| `em dash` | `—` | Spaces around the dash |
+| `ellipsis` | `…` | Attached to the preceding text |
+| `apostrophe` | `'` | Joins adjacent text: `it's` |
+| `open quote` | `"` | Attached to the text that follows |
+| `close quote` | `"` | Attached to the preceding text |
+| `open parenthesis` | `(` | Attached to the text that follows |
+| `close parenthesis` | `)` | Attached to the preceding text |
+| `open bracket` | `[` | Attached to the text that follows |
+| `close bracket` | `]` | Attached to the preceding text |
+| `forward slash` | `/` | Joins adjacent text |
+| `backslash` | `\` | Joins adjacent text |
+| `underscore` | `_` | Joins adjacent text |
+| `at sign` | `@` | Joins adjacent text: `name@example` |
+| `hash sign` | `#` | Attached to the text that follows: `#topic` |
+| `percent sign` | `%` | Attached to the preceding text: `50%` |
+| `ampersand` | `&` | Spaces around the symbol |
+| `new line` or `next line` | One line break | Starts the next line |
+| `new paragraph` | Two line breaks | Leaves one blank line |
+
+Number words also become digits when punctuation is **on**:
+
+| Say | Output |
+|---|---|
+| `zero` | `0` |
+| `one` | `1` |
+| `two` | `2` |
+| `three` | `3` |
+| `four` | `4` |
+| `five` | `5` |
+| `six` | `6` |
+| `seven` | `7` |
+| `eight` | `8` |
+| `nine` | `9` |
+
+For example, `I have two apples` becomes `I have 2 apples`.
+`one two three` becomes `1 2 3`; these replacements do not combine digits or
+parse larger numbers. Existing numeric text stays unchanged. With punctuation
+**off**, Sayline uses the recognizer's default output without replacing number
+words; the recognizer may itself produce digits.
+
+For example, say:
+
+```text
+Hello comma world full stop next line open quote well hyphen known close quote
+```
+
+Sayline inserts:
+
+```text
+Hello, world.
+"well-known"
+```
+
+To type a command as words, say **`literal` before it**: `literal comma` types
+`comma`, and `literal new line` types `new line`. `literal two` types `two`.
+The escape applies to all supported commands. Bare `period`, `dash`, and `at`
+are not command aliases.
+
+Commands update the live transcript as recognition arrives. Turning the option
+on or off affects new words; text already dictated keeps its previous formatting.
+Sayline inserts line breaks through the clipboard rather than simulating the
+Enter key. How multiline pasted text behaves depends on the receiving app.
+The overlay displays line and paragraph breaks as spaces to keep its preview on
+one line; pasted text retains the requested line and paragraph breaks.
+Commands do not change capitalization or correct grammar.
 
 ## Quick start
 

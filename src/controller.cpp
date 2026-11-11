@@ -498,7 +498,7 @@ void Controller::saveHistory() {
     const QJsonObject payload{{"started_at", m_started.toString(Qt::ISODateWithMs)},
         {"ended_at", QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs)},
         {"transcript", m_transcript.rawDisplay()}, {"rendered_transcript", transcript()},
-        {"punctuation_enabled", m_punctuationEnabled}, {"punctuation_rules_version", 2},
+        {"punctuation_enabled", m_punctuationEnabled}, {"punctuation_rules_version", 3},
         {"punctuation_spans", punctuationSpans},
         {"committed", m_transcript.committed},
         {"partial", m_transcript.preview}, {"session", m_sessionId},

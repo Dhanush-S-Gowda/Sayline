@@ -26,7 +26,8 @@ ASR events -> raw Transcript -> pure punctuation formatter -> desired display/te
 
 Keep raw recognition and rendered text separate. Never feed rendered punctuation
 back into the recognizer or reprocess it as raw speech. The overlay and inserted
-text must use the SAME rendered snapshot. Retain raw and rendered session text
+text must derive from the SAME rendered snapshot; the compact overlay replaces
+line/paragraph breaks with spaces for presentation only. Retain raw and rendered session text
 plus the option/rules version in history; event logs use counts, not dictated text.
 
 ## Live behavior and correctness boundary
@@ -46,7 +47,8 @@ unrecoverable; alignment is best effort in those cases. The backend's unlabelled
 suffix/revision delta ambiguity remains unchanged. Explicit full snapshots and
 completed text remain authoritative for recognized wording.
 
-The overlay and insertion use the same live rendering. Existing Unicode prefix
+The overlay and insertion use the same live rendering, with line breaks flattened
+only in the overlay label. Existing Unicode prefix
 diff and verified clipboard publication replace changed suffixes without appending
 symbols blindly or feeding formatted text back into recognition.
 
@@ -106,3 +108,22 @@ preference persistence, raw/rendered history, and exact rendered clipboard deliv
 Failed publication still sends no correction keys. The overlay hover test leaves
 the pointer over the button past the old tooltip delay and verifies both on/off
 clicks. Manual desktop acceptance above requires the real KDE session.
+
+## Expanded commands (rules version 3)
+
+The README contains the complete supported phrase and spacing reference.
+The original six commands now share a command table with hyphen, em dash,
+ellipsis, apostrophe, quote/parenthesis/bracket pairs, forward slash, backslash,
+underscore, at sign, hash sign, percent sign, ampersand, new/next line and new
+paragraph. Line breaks are clipboard text, not simulated Enter keys. Joining
+symbols remove surrounding horizontal whitespace; opening symbols join right,
+closing symbols join left, and line breaks preserve preceding line breaks.
+Literal escapes, per-word toggle history, raw recognition storage, and live
+reconciliation continue to apply to every supported command. Matching includes
+Unicode combining marks in word boundaries. Rules version 3 is stored in new
+session history records.
+
+Number words zero through nine also render as individual digits under the same
+punctuation toggle and per-word mode history. Digit replacement preserves spaces
+and recognition punctuation. `literal two` preserves the word. With the toggle
+off, raw recognition output is preserved, including any digits supplied by ASR.

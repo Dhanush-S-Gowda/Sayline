@@ -173,6 +173,14 @@ private slots:
         controller.handleMessage(R"({"type":"conversation.item.input_audio_transcription.completed","transcript":"Hello comma world full stop Now comma is literal."})");
         controller.pumpInsertion();
         QTRY_COMPARE(controller.m_inserted, QString("Hello, world. Now comma is literal."));
+        controller.setPunctuationEnabled(true);
+        controller.m_transcript.snapshot("new paragraph open bracket well hyphen known close bracket next line two percent sign mail at sign example");
+        controller.pumpInsertion();
+        QTRY_COMPARE(controller.m_inserted, QString("Hello, world. Now comma is literal.\n\n[well-known]\n2% mail@example"));
+        QCOMPARE(controller.transcript(), controller.m_inserted);
+        offer.close(); QVERIFY(offer.open(QIODevice::ReadOnly));
+        QCOMPARE(offer.readAll(), QByteArray("\n\n[well-known]\n2% mail@example"));
+
     }
     void clipboardFailureSendsNoCorrectionKeys() {
         QTemporaryDir helpers;
