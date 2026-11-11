@@ -1,6 +1,6 @@
 <table width="100%">
   <tr>
-    <td rowspan="2" width="15%" align="center" valign="middle">
+    <td rowspan="2" width="45%" align="center" valign="middle">
       <img src="packaging/icons/org.sayline.Sayline.png" alt="Sayline logo" width="88" height="88">
     </td>
     <td width="85%"><h1>Sayline</h1></td>
