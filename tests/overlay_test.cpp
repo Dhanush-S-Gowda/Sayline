@@ -53,6 +53,43 @@ private slots:
         }
         window->grabWindow().save(QStringLiteral(SAYLINE_BINARY_DIR "/overlay-single-line.png"));
     }
+    void commandReferenceOnHover() {
+        OverlayModel model;
+        QQmlApplicationEngine engine;
+        engine.rootContext()->setContextProperty("dictation", &model);
+        engine.rootContext()->setContextProperty("previewMode", false);
+        engine.load(QUrl("qrc:/qml/Main.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *help = window->findChild<QQuickItem *>("commandHelp");
+        auto *guide = window->findChild<QQuickWindow *>("commandGuide");
+        QVERIFY(help); QVERIFY(guide);
+        QVERIFY(!guide->isVisible());
+        const auto helpPoint = help->mapToScene(QPointF(14, 16)).toPoint();
+        QTest::mouseMove(window, helpPoint);
+        QTest::qWait(500);
+        QVERIFY(!guide->isVisible());
+        auto *toggle = window->findChild<QQuickItem *>("punctuationToggle");
+        QVERIFY(toggle);
+        const auto togglePoint = toggle->mapToScene(QPointF(16, 16)).toPoint();
+        QTest::mouseMove(window, togglePoint);
+        QTest::qWait(1600);
+        QVERIFY(!guide->isVisible());
+        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, togglePoint);
+        QVERIFY(model.punctuationEnabled);
+        QTest::mouseMove(window, helpPoint);
+        QTest::qWait(1500);
+        QVERIFY(!guide->isVisible());
+        QTRY_VERIFY(guide->isVisible());
+        QVERIFY(guide->height() > window->height());
+        QVERIFY(guide->flags().testFlag(Qt::WindowDoesNotAcceptFocus));
+        guide->grabWindow().save(QStringLiteral(SAYLINE_BINARY_DIR "/overlay-command-guide.png"));
+        QTest::mouseMove(window, QPoint(10, 10));
+        QTRY_VERIFY(!guide->isVisible());
+        QVERIFY(model.punctuationEnabled);
+    }
     void hoverLeavesButtonClickable() {
         OverlayModel model;
         QQmlApplicationEngine engine;

@@ -185,6 +185,7 @@
                 color: var(--color-body);
             }
             main {
+                position: relative;
                 flex: 1;
                 min-height: 0;
                 display: flex;
@@ -293,7 +294,7 @@
                 left: 0;
                 top: 0;
                 z-index: var(--z-overlay);
-                width: min(484px, calc(100vw - 32px));
+                width: min(484px, calc(100% - 32px));
             }
             [hidden] {
                 display: none !important;
@@ -548,7 +549,7 @@
 
             /* A sample thought gives the open space a purpose before dictation begins. */
             .thought-preview {
-                position: fixed;
+                position: absolute;
                 top: 43%;
                 left: 59%;
                 width: 29%;
@@ -732,6 +733,63 @@
                     transform: none;
                 }
             }
+
+            /* Keep the existing hero; let the command reference continue below it. */
+            html, body { overflow: visible; }
+            body { height: auto; min-height: 100dvh; }
+            main { flex: none; min-height: min(680px, calc(100dvh - 100px)); }
+            .formatting-section {
+                padding: var(--space-xl) clamp(1.5rem, 12vw, 12rem) var(--space-2xl);
+                border-top: 1px solid var(--color-rule);
+            }
+            .formatting-section h2 { font-family: var(--font-display); line-height: 1.2; }
+            .formatting-section p { max-width: 72ch; margin-bottom: var(--space-md); color: var(--color-body); }
+            .formatting-intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; margin-block: var(--space-lg); align-items: start; }
+            .formatting-intro h3 { margin: 0 0 var(--space-xs); font-size: var(--text-base); }
+            .formatting-intro p { max-width: none; }
+            .literal-note { padding: var(--space-lg); border-left: 3px solid var(--color-accent); background: var(--color-key); }
+            .literal-note p:last-child { margin-bottom: 0; }
+            .release-note { margin-bottom: var(--space-xl); }
+            .release-note h2 { font-size: var(--text-sm); color: var(--color-accent); }
+            code { font-family: var(--font-key); font-size: 0.9em; }
+            .formatting-section code { color: var(--color-accent); font-weight: 600; background: var(--color-hover); padding: 1px 4px; border-radius: 3px; }
+            .command-tables td:first-child { color: var(--color-accent); font-family: var(--font-key); font-size: 0.9em; }
+            .command-tables { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+            .command-tables table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: var(--text-sm); }
+            .command-tables caption { text-align: left; font-weight: 600; padding: 12px 0; }
+            .command-tables th, .command-tables td { text-align: left; vertical-align: top; padding: 7px 10px; overflow-wrap: anywhere; }
+            .command-tables th { background: var(--color-key); border-bottom: 1px solid var(--color-rule); }
+            .command-tables tbody tr:nth-child(even) { background: var(--color-key); }
+            .formatting-note { margin-top: var(--space-lg); font-size: var(--text-sm); }
+            .command-guide {
+                position: fixed; z-index: 11; width: min(720px, calc(100% - 24px));
+                display: flex; flex-direction: column;
+                padding: 16px; overflow: hidden; overscroll-behavior: contain;
+                border: 1px solid var(--color-rule); border-radius: var(--radius-control);
+                background: var(--color-surface); color: var(--color-ink);
+                box-shadow: 0 8px 24px var(--color-shadow);
+                font-size: 0.8125rem; line-height: 1.4;
+            }
+            .guide-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+            .guide-heading h2 { margin: 0; font-size: 1rem; }
+            #close-guide { border: 0; background: transparent; color: inherit; min-width: 32px; min-height: 32px; font-size: 1.5rem; }
+            .command-guide .command-tables { gap: 12px; overflow: auto; min-height: 0; overscroll-behavior: contain; }
+            .command-guide .guide-heading, .command-guide > p, .guide-version { flex-shrink: 0; }
+            .command-guide table { font-size: 0.75rem; line-height: 1.35; }
+            .command-guide th:first-child { width: 58%; }
+            .command-guide th, .command-guide td { padding: 4px 7px; }
+            .guide-note { margin-top: 12px; color: var(--color-muted); }
+            .guide-version { margin-top: 8px; text-align: right; color: var(--color-muted); }
+            @media (max-width: 800px) {
+                .formatting-intro { grid-template-columns: 1fr; gap: 16px; }
+            }
+            @media (max-width: 600px) {
+                main { min-height: auto; padding-block: 32px 48px; }
+                .command-tables { grid-template-columns: 1fr; }
+                .formatting-section { padding-inline: var(--space-lg); }
+                .dictation-bar { gap: 6px; }
+                .waveform { flex-basis: 40px; }
+            }
         </style>
         <script src="demo.js" defer></script>
     </head>
@@ -801,7 +859,7 @@
                         Click above or press the shortcut.
                     </p>
                     <p class="privacy-note">
-                        Sample words. No microphone needed.
+                        Sample commands. No microphone needed. Turn punctuation on to see the output.
                     </p>
                 </div>
                 <noscript
@@ -815,6 +873,90 @@
                 <span>Try Ctrl + Space. See it become words.</span>
             </aside>
         </main>
+
+        <section class="formatting-section" aria-labelledby="formatting-title">
+            <div class="release-note">
+                <h2>Latest release</h2>
+                <p><strong>v0.4.0</strong> · <time datetime="2026-11-13">13th Nov 2026</time><br>
+                Spoken punctuation, decimal points, uppercase dictation,
+                bullet lists, character backspace, and a command guide beside the punctuation button.</p>
+            </div>
+            <h2 id="formatting-title">Format as you speak.</h2>
+            <div class="formatting-intro">
+                <div class="formatting-overview">
+                    <p>Enable <strong>Spoken punctuation</strong> in the dictation overlay to convert
+                    English voice commands into punctuation, symbols, numbers, and text formatting.
+                    Commands are case-insensitive. The option is off by default, and your preference
+                    is saved between sessions.</p>
+                    <h3>Creating bullet lists</h3>
+                    <p>Say <code>start key point</code> to begin a list, <code>next point</code>
+                    for each additional item, and <code>stop key point</code> to return to paragraph text.
+                    The <code>next point</code> command is active only in list mode.
+                    Joined and plural forms, such as <code>start keypoints</code>, are also supported.</p>
+                </div>
+                <aside class="literal-note" aria-labelledby="literal-title">
+                    <h3 id="literal-title">Dictating command words</h3>
+                    <p>Prefix any command with <code>literal</code> to insert its words without executing it.</p>
+                    <p>Say <code>literal comma</code> to insert the word <code>comma</code> rather than
+                    <code>,</code>. Say <code>literal start key point</code> to insert
+                    <code>start key point</code> without starting a list.</p>
+                    <p>To explore the commands, select <strong>Try the demo</strong> and enable its
+                    punctuation button. Hover over <strong>?</strong> for two seconds, or select it,
+                    to open the command reference.</p>
+                </aside>
+            </div>
+            <div id="command-tables" class="command-tables">
+                <table>
+                    <caption>Punctuation and symbols</caption>
+                    <thead><tr><th scope="col">Say</th><th scope="col">Output</th></tr></thead>
+                    <tbody>
+                        <tr><td>comma</td><td>,</td></tr>
+                        <tr><td>full stop</td><td>.</td></tr>
+                        <tr><td>question mark</td><td>?</td></tr>
+                        <tr><td>exclamation mark</td><td>!</td></tr>
+                        <tr><td>colon / semicolon</td><td>: / ;</td></tr>
+                        <tr><td>hyphen</td><td>- (joins words)</td></tr>
+                        <tr><td>em dash</td><td>— (spaced)</td></tr>
+                        <tr><td>ellipsis</td><td>…</td></tr>
+                        <tr><td>apostrophe</td><td>&#x27; (joins words)</td></tr>
+                        <tr><td>open quote / close quote</td><td>&quot;</td></tr>
+                        <tr><td>open parenthesis / close parenthesis</td><td>( / )</td></tr>
+                        <tr><td>open bracket / close bracket</td><td>[ / ]</td></tr>
+                        <tr><td>forward slash / backslash</td><td>/ / \</td></tr>
+                        <tr><td>underscore / at sign</td><td>_ / @</td></tr>
+                        <tr><td>hash sign / percent sign</td><td># / %</td></tr>
+                        <tr><td>ampersand</td><td>&amp; (spaced)</td></tr>
+                    </tbody>
+                </table>
+
+                <table>
+                    <caption>Formatting and editing</caption>
+                    <thead><tr><th scope="col">Say</th><th scope="col">Output</th></tr></thead>
+                    <tbody>
+                        <tr><td>space</td><td>One space</td></tr>
+                        <tr><td>backspace</td><td>Delete one character from this dictation</td></tr>
+                        <tr><td>new line / next line</td><td>One line break</td></tr>
+                        <tr><td>new paragraph / next paragraph</td><td>Blank line</td></tr>
+                        <tr><td>zero … nine</td><td>0 … 9</td></tr>
+                        <tr><td>point + single digit or digit word</td><td>Decimal: zero point two → 0.2</td></tr>
+                        <tr><td>caps lock on</td><td>UPPERCASE dictated text</td></tr>
+                        <tr><td>caps lock off / caps lock of</td><td>Return to normal casing</td></tr>
+                        <tr><td>start key point</td><td>Start a - item</td></tr>
+                        <tr><td>next point</td><td>Next - item, only while list mode is on</td></tr>
+                        <tr><td>stop key point</td><td>End list; start a plain new line</td></tr>
+                        <tr><td>literal + command</td><td>Keep the command words: literal comma → comma</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="formatting-note">Uppercase and list modes apply to the current dictation session
+            and reset when the session ends. Uppercase mode affects dictated text only;
+            the keyboard’s Caps Lock setting is unchanged. Backspace removes one character
+            from the current dictation.</p>
+            <p class="formatting-note"><strong>Browser demo controls:</strong>
+            <kbd>Ctrl</kbd> + <kbd>Space</kbd> opens or closes the demo while this page has focus.
+            <kbd>Esc</kbd> closes the command guide first, then the demo.
+            If another application reserves the shortcut, use the <strong>Try the demo</strong> button.</p>
+        </section>
 
         <footer class="page-footer">
             <span>Your voice. Your computer.</span>
@@ -874,6 +1016,9 @@
                         <circle cx="19" cy="6" r="1.5" fill="currentColor" />
                     </svg>
                 </button>
+                <button id="command-help" class="punctuation" type="button"
+                    aria-label="Spoken command guide" aria-controls="command-guide"
+                    aria-expanded="false">?</button>
             </div>
             <div class="demo-caption">
                 <span id="move-help">Drag anywhere · Arrow keys to move</span>
@@ -882,6 +1027,17 @@
                 </button>
             </div>
         </section>
+        <aside id="command-guide" class="command-guide" aria-labelledby="guide-title" hidden>
+            <div class="guide-heading">
+                <h2 id="guide-title">Spoken commands</h2>
+                <button id="close-guide" type="button" aria-label="Close command guide">×</button>
+            </div>
+            <p>Punctuation must be on. Say “literal” before a command to keep its words.</p>
+            <div id="guide-tables" class="command-tables"></div>
+            <p class="guide-note">Only “start key point” enables lists; “stop key point” ends them.
+            Caps and lists reset each session.</p>
+            <div class="guide-version">v0.4.0</div>
+        </aside>
         <p
             id="announcement"
             class="sr-only"

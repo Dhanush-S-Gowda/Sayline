@@ -1,6 +1,7 @@
 #include "transcript.h"
 #include <QList>
 #include <QRegularExpression>
+#include <QTextBoundaryFinder>
 #include <algorithm>
 
 namespace {
@@ -115,7 +116,7 @@ TextEdit replacementEdit(const QString &previous, const QString &next) {
 
 namespace {
 QString renderPunctuation(const QString &raw, const QList<PunctuationSpan> *spans) {
-    enum class Spacing { Closing, Joining, Opening, Spaced, LineBreak, Word };
+    enum class Spacing { Closing, Joining, Opening, Spaced, LineBreak, Word, Control };
     struct Command { QString phrase; QString text; Spacing spacing; };
     static const QList<Command> commands{
         {"question mark", "?", Spacing::Closing},
@@ -144,6 +145,22 @@ QString renderPunctuation(const QString &raw, const QList<PunctuationSpan> *span
         {"new line", "\n", Spacing::LineBreak},
         {"next line", "\n", Spacing::LineBreak},
         {"new paragraph", "\n\n", Spacing::LineBreak},
+        {"next paragraph", "\n\n", Spacing::LineBreak},
+        {"space", " ", Spacing::Joining},
+        {"point", ".", Spacing::Joining},
+        {"caps lock on", "", Spacing::Control},
+        {"caps lock off", "", Spacing::Control},
+        {"caps lock of", "", Spacing::Control},
+        {"start key point", "", Spacing::Control},
+        {"start key points", "", Spacing::Control},
+        {"start keypoint", "", Spacing::Control},
+        {"start keypoints", "", Spacing::Control},
+        {"next point", "", Spacing::Control},
+        {"stop keypoints", "", Spacing::Control},
+        {"stop keypoint", "", Spacing::Control},
+        {"stop key points", "", Spacing::Control},
+        {"stop key point", "", Spacing::Control},
+        {"backspace", "", Spacing::Control},
         {"zero", "0", Spacing::Word},
         {"one", "1", Spacing::Word},
         {"two", "2", Spacing::Word},
@@ -162,18 +179,39 @@ QString renderPunctuation(const QString &raw, const QList<PunctuationSpan> *span
             phrase.replace("\\ ", "\\s+");
             phrases.append(phrase);
         }
+        std::stable_sort(phrases.begin(), phrases.end(), [](const QString &a, const QString &b) {
+            return a.size() > b.size();
+        });
         return QStringLiteral(R"((?<![\p{L}\p{M}\p{N}_])(?:(literal)\s+)?(%1)(?![\p{L}\p{M}\p{N}_]))")
             .arg(phrases.join('|'));
     }(), QRegularExpression::CaseInsensitiveOption | QRegularExpression::UseUnicodePropertiesOption);
     static const QRegularExpression whitespace(QStringLiteral(R"(\s+)"));
     const auto horizontalSpace = [](QChar ch) { return ch.isSpace() && ch != '\n' && ch != '\r'; };
     QString output;
+    bool caps = false, keypoints = false;
+    qsizetype explicitSpaceEnd = 0;
+    const auto appendRaw = [&](qsizetype start, qsizetype length) {
+        const auto end = start + length;
+        if (!caps) { output += raw.mid(start, length); return; }
+        if (!spans) { output += raw.mid(start, length).toUpper(); return; }
+        auto position = start;
+        for (const auto &span : *spans) {
+            const auto left = qMax(start, span.start);
+            const auto right = qMin(end, span.start + span.length);
+            if (left >= right) continue;
+            output += raw.mid(position, left - position);
+            const auto word = raw.mid(left, right - left);
+            output += span.enabled ? word.toUpper() : word;
+            position = right;
+        }
+        output += raw.mid(position, end - position);
+    };
     qsizetype cursor = 0;
     qsizetype spanIndex = 0;
     auto matches = command.globalMatch(raw);
     while (matches.hasNext()) {
         const auto match = matches.next();
-        output += raw.mid(cursor, match.capturedStart() - cursor);
+        appendRaw(cursor, match.capturedStart() - cursor);
         cursor = match.capturedEnd();
         bool enabled = true;
         if (spans) {
@@ -184,23 +222,67 @@ QString renderPunctuation(const QString &raw, const QList<PunctuationSpan> *span
         }
         if (!enabled) { output += match.captured(); continue; }
         if (!match.captured(1).isEmpty()) {
-            output += match.captured(2); // Escaped output is never matched again.
+            output += caps ? match.captured(2).toUpper() : match.captured(2); // Never matched again.
             continue;
         }
         const auto phrase = match.captured(2).toLower().replace(whitespace, " ");
         const auto entry = std::find_if(commands.cbegin(), commands.cend(),
                                        [&](const Command &value) { return value.phrase == phrase; });
         Q_ASSERT(entry != commands.cend());
+        if (phrase == "point") {
+            static const QRegularExpression digitAfter(
+                QStringLiteral(R"(^\s+([0-9]|zero|one|two|three|four|five|six|seven|eight|nine)(?![\p{L}\p{M}\p{N}_]))"),
+                QRegularExpression::CaseInsensitiveOption | QRegularExpression::UseUnicodePropertiesOption);
+            const auto digit = digitAfter.match(raw.mid(cursor));
+            bool digitEnabled = digit.hasMatch();
+            if (digitEnabled && spans) {
+                const auto start = cursor + digit.capturedStart(1);
+                for (const auto &span : *spans)
+                    if (span.start == start) digitEnabled = span.enabled;
+            }
+            if (!digitEnabled) { appendRaw(match.capturedStart(), match.capturedLength()); continue; }
+        }
+        if (entry->spacing == Spacing::Control) {
+            const bool stopKeypoint = phrase.startsWith("stop key");
+            if ((phrase == "next point" || stopKeypoint) && !keypoints) {
+                appendRaw(match.capturedStart(), match.capturedLength());
+                continue;
+            }
+            // The recognizer's separator before a command is not dictated content.
+            while (output.size() > explicitSpaceEnd && horizontalSpace(output.back())) output.chop(1);
+            if (phrase == "backspace") {
+                // Delete one visible character, including a whole combining/emoji sequence.
+                QTextBoundaryFinder boundary(QTextBoundaryFinder::Grapheme, output);
+                boundary.toEnd();
+                const auto previous = boundary.toPreviousBoundary();
+                if (previous >= 0) output.truncate(previous);
+                explicitSpaceEnd = qMin(explicitSpaceEnd, output.size());
+            }
+            else if (phrase == "caps lock on") caps = true;
+            else if (phrase.startsWith("caps lock")) caps = false;
+            else {
+                if (!output.isEmpty() && output.back() != '\n') output += '\n';
+                keypoints = !stopKeypoint;
+                if (keypoints) output += "- ";
+            }
+            while (cursor < raw.size() && QStringLiteral(".,?!:;").contains(raw[cursor])) ++cursor;
+            while (cursor < raw.size() && horizontalSpace(raw[cursor])) ++cursor;
+            if ((phrase.startsWith("caps lock") || phrase == "backspace") && !output.isEmpty()
+                && !output.back().isSpace() && cursor < raw.size()) output += ' ';
+            continue;
+        }
         if (entry->spacing == Spacing::Word) {
             // Digits replace words without consuming sentence punctuation or spaces.
             output += entry->text;
             continue;
         }
         if (entry->spacing != Spacing::Opening)
-            while (!output.isEmpty() && horizontalSpace(output.back())) output.chop(1);
+            while (!output.isEmpty() && horizontalSpace(output.back())
+                   && (phrase != "space" || output.size() > explicitSpaceEnd)) output.chop(1);
         if (entry->spacing == Spacing::Spaced && !output.isEmpty()
             && !output.back().isSpace()) output += ' ';
         output += entry->text;
+        if (phrase == "space") explicitSpaceEnd = output.size();
         // Suppress punctuation added by ASR to a spoken punctuation command.
         while (cursor < raw.size() && QStringLiteral(".,?!:;").contains(raw[cursor])) ++cursor;
         const auto spaceStart = cursor;
@@ -210,7 +292,7 @@ QString renderPunctuation(const QString &raw, const QList<PunctuationSpan> *span
         if (!joinRight && cursor > spaceStart && cursor < raw.size()
             && raw[cursor] != '\n' && raw[cursor] != '\r') output += ' ';
     }
-    output += raw.mid(cursor);
+    appendRaw(cursor, raw.size() - cursor);
     return output;
 }
 

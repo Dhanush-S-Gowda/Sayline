@@ -32,6 +32,15 @@
 
 ---
 
+## Latest release
+
+**v0.4.0**
+
+Dictate spaces, decimal points, and paragraph breaks; toggle
+uppercase text with `caps lock on/off`; create bullet lists with `start key point`,
+`next point`, and `stop key point`; and delete a character with `backspace`.
+Hover over **?** for two seconds to see a compact command/output reference.
+
 ## Features
 
 - **Live transcription**: text updates as you speak, with corrections as
@@ -78,7 +87,35 @@ not matter.
 | `percent sign` | `%` | Attached to the preceding text: `50%` |
 | `ampersand` | `&` | Spaces around the symbol |
 | `new line` or `next line` | One line break | Starts the next line |
-| `new paragraph` | Two line breaks | Leaves one blank line |
+| `new paragraph` or `next paragraph` | Two line breaks | Leaves one blank line |
+
+Hold the pointer over **?** beside the punctuation button for two seconds to open
+the compact command/output tables. Moving away before then cancels the guide.
+The guide shows the app version in its bottom-right corner.
+
+| Say | Output |
+|---|---|
+| `backspace` | Delete one character from the current dictation |
+| `space` | Exactly one space (repeat for multiple spaces) |
+| `point` followed by a single digit or digit word | Decimal dot: `zero point two` → `0.2` |
+| `caps lock on` | Uppercase subsequent dictated text |
+| `caps lock off` or `caps lock of` | Return to the recognizer's normal casing |
+| `start key point` or `start keypoints` | Start a new line with `- ` (or the first line if empty) |
+| `next point` | Start another `- ` line while keypoint mode is active |
+| `stop key point` or `stop keypoint` | End keypoint mode and start a plain new line |
+
+Spaced and joined forms (`key point`, `key points`, `keypoint`, `keypoints`)
+require an explicit `start` to enable list mode and `stop` to disable it,
+including in caps mode. Bare keypoint words stay literal in either mode;
+`next point` stays literal when list mode is off. Backspace deletes one
+visible character (including a combined Unicode character) from this session
+only; it does nothing when the dictation is empty.
+
+Caps and keypoint modes last for the current dictation session. Commands require
+punctuation to be on; speech received while it is off stays unchanged. Caps mode
+changes dictated text only. Use `literal` before any command to dictate its words,
+for example `literal caps lock on` or `literal point`. Other uses of `point`,
+`next point`, and `stop keypoint` remain ordinary text outside their contexts.
 
 Number words also become digits when punctuation is **on**:
 

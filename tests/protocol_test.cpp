@@ -38,6 +38,35 @@ private slots:
         QTest::newRow("digits-escape") << "literal one and literal zero" << "one and zero";
         QTest::newRow("digits-boundaries") << QString::fromUtf8("someone twosome stone one_two oné éone 123")
             << QString::fromUtf8("someone twosome stone one_two oné éone 123");
+        QTest::newRow("space") << "hello space world" << "hello world";
+        QTest::newRow("spaces") << "space hello space space world space" << " hello  world ";
+        QTest::newRow("paragraph-alias") << "hello next paragraph world" << "hello\n\nworld";
+        QTest::newRow("decimal") << "zero point 2 and one point nine" << "0.2 and 1.9";
+        QTest::newRow("point-word") << "the point is next point point 12 point twofold" << "the point is next point point 12 point twofold";
+        QTest::newRow("decimal-escape") << "zero literal point two" << "0 point 2";
+        QTest::newRow("caps") << "before caps lock on hello comma world caps lock off after" << "before HELLO, WORLD after";
+        QTest::newRow("caps-of") << "caps lock on hello caps lock of After" << "HELLO After";
+        QTest::newRow("caps-escape") << "literal caps lock on Hello" << "caps lock on Hello";
+        QTest::newRow("keypoints") << "intro start keypoints first next point second stop keypoint end" << "intro\n- first\n- second\nend";
+        QTest::newRow("list-caps") << "start keypoints caps lock on first next point second caps lock off stop keypoint end" << "- FIRST\n- SECOND\nend";
+        QTest::newRow("list-asr") << "Start keypoints. First next point. Second stop keypoint. End" << "- First\n- Second\nEnd";
+        QTest::newRow("spaced-list") << "start key point first next point second stop key point End" << "- first\n- second\nEnd";
+        QTest::newRow("caps-spaced-list") << "CAPS LOCK ON START KEY POINT FIRST NEXT POINT SECOND STOP KEY POINT CAPS LOCK OFF End" << "- FIRST\n- SECOND\nEnd";
+        QTest::newRow("plural-list") << "start key points first stop key points end" << "- first\nend";
+        QTest::newRow("joined-list") << "start keypoints first stop keypoints end" << "- first\nend";
+        QTest::newRow("bare-keypoints") << "This is my first key point and keypoints keypoint key points next point" << "This is my first key point and keypoints keypoint key points next point";
+        QTest::newRow("bare-keypoints-active") << "start key point This is my first key point next point And now the second point stop key point keypoint next point key points" << "- This is my first key point\n- And now the second point\nkeypoint next point key points";
+        QTest::newRow("list-restart") << "start key point first stop key point next point start keypoint second stop keypoint end" << "- first\nnext point\n- second\nend";
+        QTest::newRow("list-escape") << "literal start key point first" << "start key point first";
+        QTest::newRow("backspace") << "hello backspace" << "hell";
+        QTest::newRow("repeat-backspace") << "hello backspace backspace world" << "hel world";
+        QTest::newRow("empty-backspace") << "backspace backspace hello" << "hello";
+        QTest::newRow("backspace-space") << "hello space backspace" << "hello";
+        QTest::newRow("backspace-symbol") << "hello comma backspace" << "hello";
+        QTest::newRow("backspace-unicode") << QString::fromUtf8("Hi 😀 backspace") << "Hi ";
+        QTest::newRow("backspace-combining") << QString::fromUtf8("café backspace") << "caf";
+        QTest::newRow("backspace-caps") << "caps lock on HELLO BACKSPACE caps lock off end" << "HELL end";
+        QTest::newRow("backspace-escape") << "hello literal backspace" << "hello backspace";
         QTest::newRow("unrelated") << "Wait... really?!" << "Wait... really?!";
     }
     void spokenPunctuation() {
@@ -141,6 +170,60 @@ private slots:
         QCOMPARE(t.display(), QString("One two 3 4 five six. seven 8"));
         t.complete("literal seven eight.");
         QCOMPARE(t.display(), QString("One two 3 4 five six. seven 8."));
+    }
+
+    void liveFormattingModes() {
+        Transcript t; t.setPunctuationEnabled(true);
+        t.complete("caps lock on start keypoints first");
+        t.snapshot("next point zero point");
+        QCOMPARE(t.display(), QString("- FIRST\n- 0 POINT"));
+        t.delta(" two");
+        QCOMPARE(t.display(), QString("- FIRST\n- 0.2"));
+        t.complete("next point zero point two");
+        t.snapshot("stop keypoint caps lock off End");
+        QCOMPARE(t.display(), QString("- FIRST\n- 0.2\nEnd"));
+        t.snapshot("next point revised");
+        QCOMPARE(t.display(), QString("- FIRST\n- 0.2\n- REVISED"));
+        t.setPunctuationEnabled(false); t.delta(" lowercase comma");
+        QCOMPARE(t.display(), QString("- FIRST\n- 0.2\n- REVISED lowercase comma"));
+        t.clear(); t.setPunctuationEnabled(true); t.snapshot("ordinary next point");
+        QCOMPARE(t.display(), QString("ordinary next point"));
+    }
+    void keypointModeRequiresExplicitStart() {
+        Transcript t; t.setPunctuationEnabled(true);
+        t.complete("my first key point next point");
+        QCOMPARE(t.display(), QString("my first key point next point"));
+        t.complete("start key point This is my first key point");
+        t.snapshot("next point second");
+        QCOMPARE(t.display(), QString("my first key point next point\n- This is my first key point\n- second"));
+        t.complete("next point second stop key point");
+        t.snapshot("keypoint next point");
+        QCOMPARE(t.display(), QString("my first key point next point\n- This is my first key point\n- second\nkeypoint next point"));
+        t.complete("keypoint next point");
+        t.snapshot("start keypoint again");
+        QCOMPARE(t.display(), QString("my first key point next point\n- This is my first key point\n- second\nkeypoint next point\n- again"));
+    }
+    void editingAcrossUpdates() {
+        Transcript t; t.setPunctuationEnabled(true);
+        t.complete("hello"); t.snapshot("back"); t.delta("space");
+        QCOMPARE(t.display(), QString("hell"));
+        t.complete("backspace");
+        QCOMPARE(t.display(), QString("hell"));
+        t.snapshot("backspace");
+        QCOMPARE(t.display(), QString("hel"));
+        t.snapshot("world");
+        QCOMPARE(t.display(), QString("hell world"));
+        t.snapshot("start key"); t.delta(" point first");
+        QCOMPARE(t.display(), QString("hell\n- first"));
+        t.setPunctuationEnabled(false); t.delta(" backspace");
+        QCOMPARE(t.display(), QString("hell\n- first backspace"));
+        t.clear(); t.setPunctuationEnabled(true); t.snapshot("backspace");
+        QVERIFY(t.display().isEmpty());
+    }
+    void decimalAcrossToggle() {
+        Transcript t; t.setPunctuationEnabled(true); t.snapshot("zero point");
+        t.setPunctuationEnabled(false); t.delta(" two");
+        QCOMPARE(t.display(), QString("0 point two"));
     }
 
     void zedEditorAndEmbeddedTerminalSharePaste() {
