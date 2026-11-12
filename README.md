@@ -111,6 +111,13 @@ including in caps mode. Bare keypoint words stay literal in either mode;
 visible character (including a combined Unicode character) from this session
 only; it does nothing when the dictation is empty.
 
+The first letter of the next word is capitalized after sentence-ending commands
+(`full stop`, `question mark`, `exclamation mark`), line and paragraph breaks,
+and list transitions. The rest of the word keeps its recognized casing; caps
+mode continues to uppercase the whole text. Quotes preserve sentence context:
+`full stop open quote hello` becomes `. "Hello`, while
+`say open quote hello close quote` becomes `say "hello"`.
+
 Caps and keypoint modes last for the current dictation session. Commands require
 punctuation to be on; speech received while it is off stays unchanged. Caps mode
 changes dictated text only. Use `literal` before any command to dictate its words,
@@ -148,7 +155,7 @@ Sayline inserts:
 
 ```text
 Hello, world.
-"well-known"
+"Well-known"
 ```
 
 To type a command as words, say **`literal` before it**: `literal comma` types
@@ -162,7 +169,8 @@ Sayline inserts line breaks through the clipboard rather than simulating the
 Enter key. How multiline pasted text behaves depends on the receiving app.
 The overlay displays line and paragraph breaks as spaces to keep its preview on
 one line; pasted text retains the requested line and paragraph breaks.
-Commands do not change capitalization or correct grammar.
+Apart from sentence-start capitalization and explicit caps commands, Sayline
+preserves recognized casing. These formatting rules do not perform grammar correction.
 
 ## Quick start
 

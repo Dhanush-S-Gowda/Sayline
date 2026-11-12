@@ -265,7 +265,7 @@ Window {
                 }
                 Label {
                     width: parent.width
-                    text: "Only “start key point” enables lists; “stop key point” ends them. Joined spellings work too."
+                    text: "Only “start key point” enables lists; “stop key point” ends them. Sentence and line starts are capitalized. Joined spellings work too."
                     wrapMode: Text.WordWrap
                     color: Qt.alpha(theme.windowText, 0.75)
                 }

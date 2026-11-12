@@ -7,7 +7,7 @@ private slots:
     void spokenPunctuation_data() {
         QTest::addColumn<QString>("raw"); QTest::addColumn<QString>("rendered");
         QTest::newRow("commands") << "Hello comma world full stop" << "Hello, world.";
-        QTest::newRow("remaining") << "Ready question mark Yes exclamation mark time colon now semicolon later" << "Ready? Yes! time: now; later";
+        QTest::newRow("remaining") << "Ready question mark Yes exclamation mark time colon now semicolon later" << "Ready? Yes! Time: now; later";
         QTest::newRow("asr") << "Are you ready question mark." << "Are you ready?";
         QTest::newRow("escape") << "Write literal question mark and literal comma" << "Write question mark and comma";
         QTest::newRow("boundary") << "commander semicolons time period literal word" << "commander semicolons time period literal word";
@@ -21,12 +21,12 @@ private slots:
         QTest::newRow("pairs") << "Say open quote hello close quote open parenthesis aside close parenthesis open bracket note close bracket full stop"
             << "Say \"hello\" (aside) [note].";
         QTest::newRow("lines") << "First new line second next line third new paragraph fourth"
-            << "First\nsecond\nthird\n\nfourth";
+            << "First\nSecond\nThird\n\nFourth";
         QTest::newRow("trailing-line") << "First new line." << "First\n";
         QTest::newRow("leading-paragraph") << "new paragraph Hello" << "\n\nHello";
-        QTest::newRow("consecutive-lines") << "First new line next line last" << "First\n\nlast";
-        QTest::newRow("line-punctuation") << "First full stop new line open quote next close quote" << "First.\n\"next\"";
-        QTest::newRow("asr-pairs") << "open bracket, note close bracket. next line. end" << "[note]\nend";
+        QTest::newRow("consecutive-lines") << "First new line next line last" << "First\n\nLast";
+        QTest::newRow("line-punctuation") << "First full stop new line open quote next close quote" << "First.\n\"Next\"";
+        QTest::newRow("asr-pairs") << "open bracket, note close bracket. next line. end" << "[note]\nEnd";
         QTest::newRow("new-escapes") << "literal hyphen literal new line literal open quote literal at sign"
             << "hyphen new line open quote at sign";
         QTest::newRow("whitespace") << "OPEN\tPARENTHESIS hello CLOSE   PARENTHESIS" << "(hello)";
@@ -40,23 +40,23 @@ private slots:
             << QString::fromUtf8("someone twosome stone one_two oné éone 123");
         QTest::newRow("space") << "hello space world" << "hello world";
         QTest::newRow("spaces") << "space hello space space world space" << " hello  world ";
-        QTest::newRow("paragraph-alias") << "hello next paragraph world" << "hello\n\nworld";
+        QTest::newRow("paragraph-alias") << "hello next paragraph world" << "hello\n\nWorld";
         QTest::newRow("decimal") << "zero point 2 and one point nine" << "0.2 and 1.9";
         QTest::newRow("point-word") << "the point is next point point 12 point twofold" << "the point is next point point 12 point twofold";
         QTest::newRow("decimal-escape") << "zero literal point two" << "0 point 2";
         QTest::newRow("caps") << "before caps lock on hello comma world caps lock off after" << "before HELLO, WORLD after";
         QTest::newRow("caps-of") << "caps lock on hello caps lock of After" << "HELLO After";
         QTest::newRow("caps-escape") << "literal caps lock on Hello" << "caps lock on Hello";
-        QTest::newRow("keypoints") << "intro start keypoints first next point second stop keypoint end" << "intro\n- first\n- second\nend";
-        QTest::newRow("list-caps") << "start keypoints caps lock on first next point second caps lock off stop keypoint end" << "- FIRST\n- SECOND\nend";
+        QTest::newRow("keypoints") << "intro start keypoints first next point second stop keypoint end" << "intro\n- First\n- Second\nEnd";
+        QTest::newRow("list-caps") << "start keypoints caps lock on first next point second caps lock off stop keypoint end" << "- FIRST\n- SECOND\nEnd";
         QTest::newRow("list-asr") << "Start keypoints. First next point. Second stop keypoint. End" << "- First\n- Second\nEnd";
-        QTest::newRow("spaced-list") << "start key point first next point second stop key point End" << "- first\n- second\nEnd";
+        QTest::newRow("spaced-list") << "start key point first next point second stop key point End" << "- First\n- Second\nEnd";
         QTest::newRow("caps-spaced-list") << "CAPS LOCK ON START KEY POINT FIRST NEXT POINT SECOND STOP KEY POINT CAPS LOCK OFF End" << "- FIRST\n- SECOND\nEnd";
-        QTest::newRow("plural-list") << "start key points first stop key points end" << "- first\nend";
-        QTest::newRow("joined-list") << "start keypoints first stop keypoints end" << "- first\nend";
+        QTest::newRow("plural-list") << "start key points first stop key points end" << "- First\nEnd";
+        QTest::newRow("joined-list") << "start keypoints first stop keypoints end" << "- First\nEnd";
         QTest::newRow("bare-keypoints") << "This is my first key point and keypoints keypoint key points next point" << "This is my first key point and keypoints keypoint key points next point";
-        QTest::newRow("bare-keypoints-active") << "start key point This is my first key point next point And now the second point stop key point keypoint next point key points" << "- This is my first key point\n- And now the second point\nkeypoint next point key points";
-        QTest::newRow("list-restart") << "start key point first stop key point next point start keypoint second stop keypoint end" << "- first\nnext point\n- second\nend";
+        QTest::newRow("bare-keypoints-active") << "start key point This is my first key point next point And now the second point stop key point keypoint next point key points" << "- This is my first key point\n- And now the second point\nKeypoint next point key points";
+        QTest::newRow("list-restart") << "start key point first stop key point next point start keypoint second stop keypoint end" << "- First\nNext point\n- Second\nEnd";
         QTest::newRow("list-escape") << "literal start key point first" << "start key point first";
         QTest::newRow("backspace") << "hello backspace" << "hell";
         QTest::newRow("repeat-backspace") << "hello backspace backspace world" << "hel world";
@@ -67,6 +67,17 @@ private slots:
         QTest::newRow("backspace-combining") << QString::fromUtf8("café backspace") << "caf";
         QTest::newRow("backspace-caps") << "caps lock on HELLO BACKSPACE caps lock off end" << "HELL end";
         QTest::newRow("backspace-escape") << "hello literal backspace" << "hello backspace";
+        QTest::newRow("sentence-capitalization") << "hello full stop next sentence question mark another sentence exclamation mark done" << "hello. Next sentence? Another sentence! Done";
+        QTest::newRow("preserve-word-case") << "new line iPhone next line NASA new paragraph mixedCASE" << "\nIPhone\nNASA\n\nMixedCASE";
+        QTest::newRow("quote-sentence") << "open quote hello close quote full stop open quote another close quote" << "\"Hello\". \"Another\"";
+        QTest::newRow("quote-mid-sentence") << "say open quote hello close quote now" << "say \"hello\" now";
+        QTest::newRow("capital-after-symbols") << "new line open bracket open quote hello close quote close bracket" << "\n[\"Hello\"]";
+        QTest::newRow("capital-after-escape") << "full stop literal comma next" << ". Comma next";
+        QTest::newRow("numeric-start") << "full stop two apples new line 42 cats" << ". 2 apples\n42 cats";
+        QTest::newRow("decimal-no-sentence") << "zero point two apples" << "0.2 apples";
+        QTest::newRow("deleted-sentence-boundary") << "hello full stop backspace world" << "hello world";
+        QTest::newRow("literal-boundary") << "literal full stop hello literal new line world" << "full stop hello new line world";
+        QTest::newRow("unicode-capital") << QString::fromUtf8("full stop éclair new line 𐐨ello") << QString::fromUtf8(". Éclair\n𐐀ello");
         QTest::newRow("unrelated") << "Wait... really?!" << "Wait... really?!";
     }
     void spokenPunctuation() {
@@ -141,14 +152,14 @@ private slots:
         t.snapshot("well hy"); t.delta("phen known new");
         QCOMPARE(t.display(), QString("well-known new"));
         t.delta(" line next");
-        QCOMPARE(t.display(), QString("well-known\nnext"));
+        QCOMPARE(t.display(), QString("well-known\nNext"));
         t.complete("Well hyphen known new line. Next");
         QCOMPARE(t.display(), QString("Well-known\nNext"));
         t.snapshot("new"); t.setPunctuationEnabled(false); t.delta(" paragraph plain hyphen text");
         QCOMPARE(t.display(), QString("Well-known\nNext new paragraph plain hyphen text"));
         t.complete("new paragraph plain hyphen text");
         t.setPunctuationEnabled(true); t.snapshot("new paragraph open bracket done close bracket");
-        QCOMPARE(t.display(), QString("Well-known\nNext new paragraph plain hyphen text\n\n[done]"));
+        QCOMPARE(t.display(), QString("Well-known\nNext new paragraph plain hyphen text\n\n[Done]"));
         t.snapshot("literal new line");
         QCOMPARE(t.display(), QString("Well-known\nNext new paragraph plain hyphen text new line"));
     }
@@ -195,13 +206,13 @@ private slots:
         QCOMPARE(t.display(), QString("my first key point next point"));
         t.complete("start key point This is my first key point");
         t.snapshot("next point second");
-        QCOMPARE(t.display(), QString("my first key point next point\n- This is my first key point\n- second"));
+        QCOMPARE(t.display(), QString("my first key point next point\n- This is my first key point\n- Second"));
         t.complete("next point second stop key point");
         t.snapshot("keypoint next point");
-        QCOMPARE(t.display(), QString("my first key point next point\n- This is my first key point\n- second\nkeypoint next point"));
+        QCOMPARE(t.display(), QString("my first key point next point\n- This is my first key point\n- Second\nKeypoint next point"));
         t.complete("keypoint next point");
         t.snapshot("start keypoint again");
-        QCOMPARE(t.display(), QString("my first key point next point\n- This is my first key point\n- second\nkeypoint next point\n- again"));
+        QCOMPARE(t.display(), QString("my first key point next point\n- This is my first key point\n- Second\nKeypoint next point\n- Again"));
     }
     void editingAcrossUpdates() {
         Transcript t; t.setPunctuationEnabled(true);
@@ -214,11 +225,29 @@ private slots:
         t.snapshot("world");
         QCOMPARE(t.display(), QString("hell world"));
         t.snapshot("start key"); t.delta(" point first");
-        QCOMPARE(t.display(), QString("hell\n- first"));
+        QCOMPARE(t.display(), QString("hell\n- First"));
         t.setPunctuationEnabled(false); t.delta(" backspace");
-        QCOMPARE(t.display(), QString("hell\n- first backspace"));
+        QCOMPARE(t.display(), QString("hell\n- First backspace"));
         t.clear(); t.setPunctuationEnabled(true); t.snapshot("backspace");
         QVERIFY(t.display().isEmpty());
+    }
+    void capitalizationAcrossUpdatesAndModes() {
+        Transcript t; t.setPunctuationEnabled(true);
+        t.complete("hello full stop"); t.snapshot("n");
+        QCOMPARE(t.display(), QString("hello. N"));
+        t.delta("ext word"); QCOMPARE(t.display(), QString("hello. Next word"));
+        t.complete("next word");
+        t.snapshot("new line open quote lower");
+        QCOMPARE(t.display(), QString("hello. Next word\n\"Lower"));
+        t.snapshot("new line open quote revised");
+        QCOMPARE(t.display(), QString("hello. Next word\n\"Revised"));
+        t.complete("new line");
+        t.setPunctuationEnabled(false); t.snapshot("lowercase comma");
+        QCOMPARE(t.display(), QString("hello. Next word\nlowercase comma"));
+        t.setPunctuationEnabled(true); t.delta(" another");
+        QCOMPARE(t.display(), QString("hello. Next word\nlowercase comma another"));
+        t.clear(); t.snapshot("lowercase");
+        QCOMPARE(t.display(), QString("lowercase"));
     }
     void decimalAcrossToggle() {
         Transcript t; t.setPunctuationEnabled(true); t.snapshot("zero point");

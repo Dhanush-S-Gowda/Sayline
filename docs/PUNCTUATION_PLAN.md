@@ -67,7 +67,9 @@ alternative if the user prefers fewer accidental replacements.
 ## Spacing and recognizer punctuation
 
 Remove preceding spaces before closing punctuation; retain one following space
-before the next word. Do not rewrite casing, grammar or unrelated punctuation.
+before the next word. Capitalize the first letter after sentence-ending commands, line breaks, and list
+transitions, preserving the rest of the word and respecting caps mode. Quotes
+carry sentence context. Preserve unrelated recognition casing and punctuation.
 Suppress an adjacent automatic ASR punctuation mark only as part of consuming a
 recognized command; do not globally collapse punctuation (ellipses etc.).
 

@@ -22,7 +22,7 @@
       [" caps lock off", ""], [" normal casing", " normal casing"], [" full stop", "."]],
     [["Hello", "Hello"], [" space", " "], [" worldx", "worldx"],
       [" backspace", "\b"], [" exclamation mark", "!"],
-      [" new line", "\n"], [" literal comma", "comma"]]
+      [" new line", "\n"], [" literal comma", "Comma"]]
   ];
   const help = document.querySelector("#command-help");
   const guide = document.querySelector("#command-guide");

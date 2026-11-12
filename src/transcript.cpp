@@ -190,21 +190,34 @@ QString renderPunctuation(const QString &raw, const QList<PunctuationSpan> *span
     QString output;
     bool caps = false, keypoints = false;
     qsizetype explicitSpaceEnd = 0;
+    qsizetype capitalizationBoundary = -1;
+    const auto appendText = [&](QString text, bool enabled) {
+        if (caps && enabled) text = text.toUpper();
+        if (capitalizationBoundary >= 0) {
+            static const QRegularExpression firstWordCharacter(QStringLiteral(R"([\p{L}\p{N}_])"),
+                QRegularExpression::UseUnicodePropertiesOption);
+            const auto first = firstWordCharacter.match(text);
+            if (first.hasMatch()) {
+                if (enabled) text.replace(first.capturedStart(), first.capturedLength(), first.captured().toUpper());
+                capitalizationBoundary = -1;
+            }
+        }
+        output += text;
+    };
     const auto appendRaw = [&](qsizetype start, qsizetype length) {
         const auto end = start + length;
-        if (!caps) { output += raw.mid(start, length); return; }
-        if (!spans) { output += raw.mid(start, length).toUpper(); return; }
+        if (!caps && capitalizationBoundary < 0) { output += raw.mid(start, length); return; }
+        if (!spans) { appendText(raw.mid(start, length), true); return; }
         auto position = start;
         for (const auto &span : *spans) {
             const auto left = qMax(start, span.start);
             const auto right = qMin(end, span.start + span.length);
             if (left >= right) continue;
-            output += raw.mid(position, left - position);
-            const auto word = raw.mid(left, right - left);
-            output += span.enabled ? word.toUpper() : word;
+            appendText(raw.mid(position, left - position), false);
+            appendText(raw.mid(left, right - left), span.enabled);
             position = right;
         }
-        output += raw.mid(position, end - position);
+        appendText(raw.mid(position, end - position), false);
     };
     qsizetype cursor = 0;
     qsizetype spanIndex = 0;
@@ -220,9 +233,9 @@ QString renderPunctuation(const QString &raw, const QList<PunctuationSpan> *span
             while (index < spans->size() && spans->at(index).start < match.capturedEnd())
                 enabled = spans->at(index++).enabled && enabled;
         }
-        if (!enabled) { output += match.captured(); continue; }
+        if (!enabled) { appendText(match.captured(), false); continue; }
         if (!match.captured(1).isEmpty()) {
-            output += caps ? match.captured(2).toUpper() : match.captured(2); // Never matched again.
+            appendText(match.captured(2), true); // Escaped words are never matched again.
             continue;
         }
         const auto phrase = match.captured(2).toLower().replace(whitespace, " ");
@@ -256,6 +269,7 @@ QString renderPunctuation(const QString &raw, const QList<PunctuationSpan> *span
                 boundary.toEnd();
                 const auto previous = boundary.toPreviousBoundary();
                 if (previous >= 0) output.truncate(previous);
+                if (output.size() < capitalizationBoundary) capitalizationBoundary = -1;
                 explicitSpaceEnd = qMin(explicitSpaceEnd, output.size());
             }
             else if (phrase == "caps lock on") caps = true;
@@ -264,6 +278,7 @@ QString renderPunctuation(const QString &raw, const QList<PunctuationSpan> *span
                 if (!output.isEmpty() && output.back() != '\n') output += '\n';
                 keypoints = !stopKeypoint;
                 if (keypoints) output += "- ";
+                capitalizationBoundary = output.size();
             }
             while (cursor < raw.size() && QStringLiteral(".,?!:;").contains(raw[cursor])) ++cursor;
             while (cursor < raw.size() && horizontalSpace(raw[cursor])) ++cursor;
@@ -273,7 +288,7 @@ QString renderPunctuation(const QString &raw, const QList<PunctuationSpan> *span
         }
         if (entry->spacing == Spacing::Word) {
             // Digits replace words without consuming sentence punctuation or spaces.
-            output += entry->text;
+            appendText(entry->text, true);
             continue;
         }
         if (entry->spacing != Spacing::Opening)
@@ -281,7 +296,11 @@ QString renderPunctuation(const QString &raw, const QList<PunctuationSpan> *span
                    && (phrase != "space" || output.size() > explicitSpaceEnd)) output.chop(1);
         if (entry->spacing == Spacing::Spaced && !output.isEmpty()
             && !output.back().isSpace()) output += ' ';
+        const bool startsSentence = phrase == "full stop" || phrase == "question mark"
+            || phrase == "exclamation mark" || entry->spacing == Spacing::LineBreak
+            || (phrase == "open quote" && output.trimmed().isEmpty());
         output += entry->text;
+        if (startsSentence) capitalizationBoundary = output.size();
         if (phrase == "space") explicitSpaceEnd = output.size();
         // Suppress punctuation added by ASR to a spoken punctuation command.
         while (cursor < raw.size() && QStringLiteral(".,?!:;").contains(raw[cursor])) ++cursor;
